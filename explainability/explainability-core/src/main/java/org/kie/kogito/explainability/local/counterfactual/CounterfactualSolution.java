@@ -16,9 +16,11 @@
 
 package org.kie.kogito.explainability.local.counterfactual;
 
+import org.kie.kogito.explainability.local.counterfactual.constraints.CounterfactualConstraintConfiguration;
 import org.kie.kogito.explainability.local.counterfactual.entities.CounterfactualEntity;
 import org.kie.kogito.explainability.model.Output;
 import org.kie.kogito.explainability.model.PredictionProvider;
+import org.optaplanner.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
 import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
@@ -33,6 +35,9 @@ import java.util.List;
  */
 @PlanningSolution
 public class CounterfactualSolution {
+
+    @ConstraintConfigurationProvider
+    private CounterfactualConstraintConfiguration constraintConfiguration;
 
     @PlanningEntityCollectionProperty
     private List<CounterfactualEntity> entities;

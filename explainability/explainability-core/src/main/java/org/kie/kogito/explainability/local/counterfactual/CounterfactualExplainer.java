@@ -132,6 +132,7 @@ public class CounterfactualExplainer implements LocalExplainer<List<Counterfactu
             try {
                 // Wait until the solving ends
                 solution = solverJob.getFinalBestSolution();
+                System.out.println(solution.getScore());
                 return solution.getEntities();
             } catch (InterruptedException | ExecutionException e) {
                 throw new IllegalStateException("Solving failed: {}", e);
