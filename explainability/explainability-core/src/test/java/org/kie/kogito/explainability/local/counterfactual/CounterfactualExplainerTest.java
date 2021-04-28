@@ -606,7 +606,7 @@ class CounterfactualExplainerTest {
         solverConfig.setRandomSeed((long) seed);
         solverConfig.setEnvironmentMode(EnvironmentMode.REPRODUCIBLE);
 
-        final Consumer<CounterfactualSolution> assertIntermediateCounterfactualNotNull = counterfactual -> {
+        final Consumer<CounterfactualResult> assertIntermediateCounterfactualNotNull = counterfactual -> {
         };
 
         final CounterfactualExplainer counterfactualExplainer =
@@ -636,28 +636,28 @@ class CounterfactualExplainerTest {
         Random random = new Random();
         random.setSeed(seed);
 
-        final List<Output> goal = List.of(new Output("inside", Type.BOOLEAN, new Value(true), 0.0));
+        final List<Output> goal = List.of(new Output("inside", Type.BOOLEAN, new Value(true), 0.5));
 
         List<Feature> features = new LinkedList<>();
         List<FeatureDomain> featureBoundaries = new LinkedList<>();
         List<Boolean> constraints = new LinkedList<>();
         features.add(FeatureFactory.newNumericalFeature("f-num1", 10.0));
         constraints.add(false);
-        featureBoundaries.add(NumericalFeatureDomain.create(0.0, 10000.0));
+        featureBoundaries.add(NumericalFeatureDomain.create(0.0, 1000.0));
         features.add(FeatureFactory.newNumericalFeature("f-num2", 10.0));
         constraints.add(false);
-        featureBoundaries.add(NumericalFeatureDomain.create(0.0, 10000.0));
+        featureBoundaries.add(NumericalFeatureDomain.create(0.0, 1000.0));
         features.add(FeatureFactory.newNumericalFeature("f-num3", 10.0));
         constraints.add(false);
-        featureBoundaries.add(NumericalFeatureDomain.create(0.0, 10000.0));
+        featureBoundaries.add(NumericalFeatureDomain.create(0.0, 1000.0));
         features.add(FeatureFactory.newNumericalFeature("f-num4", 10.0));
         constraints.add(false);
-        featureBoundaries.add(NumericalFeatureDomain.create(0.0, 10000.0));
+        featureBoundaries.add(NumericalFeatureDomain.create(0.0, 1000.0));
 
         final double center = 400.0;
-        final double epsilon = 1e-10;
+        final double epsilon = 0.1;
 
-        PredictionProvider model = TestUtils.getSumThresholdModel(center, epsilon);
+        final PredictionProvider model = TestUtils.getSumThresholdModel(center, epsilon);
 
         final TerminationConfig terminationConfig =
                 new TerminationConfig().withBestScoreFeasible(true).withScoreCalculationCountLimit(100_000L);
@@ -670,11 +670,11 @@ class CounterfactualExplainerTest {
         final List<UUID> intermediateIds = new ArrayList<>();
         final List<UUID> executionIds = new ArrayList<>();
 
-        final Consumer<CounterfactualSolution> captureIntermediateIds = counterfactual -> {
+        final Consumer<CounterfactualResult> captureIntermediateIds = counterfactual -> {
             intermediateIds.add(counterfactual.getCounterfactualId());
         };
 
-        final Consumer<CounterfactualSolution> captureExecutionIds = counterfactual -> {
+        final Consumer<CounterfactualResult> captureExecutionIds = counterfactual -> {
             executionIds.add(counterfactual.getExecutionId());
         };
 
@@ -687,8 +687,9 @@ class CounterfactualExplainerTest {
         PredictionInput input = new PredictionInput(features);
         PredictionOutput output = new PredictionOutput(goal);
         final UUID executionId = UUID.randomUUID();
-        Prediction prediction = new CounterfactualPrediction(input, output, new PredictionFeatureDomain(featureBoundaries),
-                constraints, null, captureIntermediateIds.andThen(captureExecutionIds), executionId);
+        final Prediction prediction =
+                new CounterfactualPrediction(input, output, new PredictionFeatureDomain(featureBoundaries),
+                        constraints, null, captureIntermediateIds.andThen(captureExecutionIds), executionId);
         final CounterfactualResult counterfactualResult = counterfactualExplainer.explainAsync(prediction, model)
                 .get(Config.INSTANCE.getAsyncTimeout(), Config.INSTANCE.getAsyncTimeUnit());
 
